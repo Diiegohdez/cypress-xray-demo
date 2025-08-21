@@ -1,6 +1,5 @@
-import LoginPage from "../pages/LoginPage";
-import ProductsPage from "../pages/ProductsPage";
-
+import LoginPage from "../page/LoginPage";
+import ProductsPage from "../page/ProductsPage";
 
 describe("Pruebas de Productos y Carrito en Sauce Demo",()=>{
 

@@ -1,6 +1,6 @@
-import LoginPage from "../pages/LoginPage";
-import ProductsPage from "../pages/ProductsPage";
-import CheckoutPage from "../pages/CheckoutPage";
+import LoginPage from "../page/LoginPage";
+import ProductsPage from "../page/ProductsPage";
+import CheckoutPage from "../page/CheckoutPage";
 
 describe("Pruebas del Proceso de Checkout en Sauce Demo",()=>{
 

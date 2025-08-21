@@ -1,4 +1,4 @@
-import LoginPage from "../pages/LoginPage";
+import LoginPage from "../page/LoginPage";
 
 describe("Autenticación de Usuario en Sauce Demo", () => {
     
