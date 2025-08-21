@@ -1,4 +1,4 @@
-name: cypress-tests
+name: Cypress Tests with Xray
 
 on:
   push:
@@ -6,31 +6,39 @@ on:
   pull_request:
     branches: [ main ]
 
-concurrency:
-  group: cypress-tests-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   cypress-run:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
-      - name: Use Node.js 18.18.2
-        uses: actions/setup-node@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: 18.18.2
+          node-version: 20
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Cypress tests
-        env:
-          JIRA_CLIENT_ID: ${{ secrets.JIRA_CLIENT_ID }}
-          JIRA_CLIENT_SECRET: ${{ secrets.JIRA_CLIENT_SECRET }}
-          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
-          JIRA_PROJECT_KEY: ${{ secrets.JIRA_PROJECT_KEY }}
-          XRAY_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
-          XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
-        run: npm run test:ci
+      # Ejecutar Cypress y generar reporte JUnit sin modificar cypress.config.js
+      - name: Run Cypress tests with JUnit reporter
+        run: |
+          mkdir -p results
+          npx cypress run --reporter junit --reporter-options "mochaFile=results/junit-[hash].xml,toConsole=true"
+
+      # Subir reporte a Xray (Jira Cloud)
+      - name: Upload results to Xray
+        run: |
+          echo "Autenticando en Xray..."
+          AUTH_RESPONSE=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"client_id\":\"${{ secrets.JIRA_CLIENT_ID }}\",\"client_secret\":\"${{ secrets.JIRA_CLIENT_SECRET }}\"}" \
+            ${{ secrets.JIRA_BASE_URL }}/api/v2/authenticate)
+          TOKEN=$(echo $AUTH_RESPONSE | tr -d '"')
+
+          echo "Subiendo resultados a Xray..."
+          curl -H "Authorization: Bearer $TOKEN" \
+               -F "file=@results/junit-*.xml" \
+               ${{ secrets.JIRA_BASE_URL }}/api/v2/import/execution/junit
