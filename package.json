@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test:ci": "cypress run --browser chrome --headless --reporter mocha-junit-reporter --reporter-options mochaFile=results/test-[hash].xml"
+    "test:ci": "cypress run --reporter mocha-junit-reporter --reporter-options mochaFile=results/test-[hash].xml"
   },
   "keywords": [],
   "author": "",
