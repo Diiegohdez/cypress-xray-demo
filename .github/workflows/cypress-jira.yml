@@ -1,0 +1,36 @@
+name: Cypress + Jira Xray Integration
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  cypress-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Cypress tests
+        run: npm run test:ci
+
+      - name: Merge JUnit reports
+        run: npx junit-merge ./results/*.xml > ./results/final-report.xml
+
+      - name: Upload results to Jira Xray
+        run: |
+          curl -H "Content-Type: multipart/form-data" \
+               -u "${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }}" \
+               -F "file=@results/final-report.xml" \
+               "https://xray.cloud.getxray.app/api/v2/import/execution/junit?projectKey=${{ secrets.JIRA_PROJECT_KEY }}"
